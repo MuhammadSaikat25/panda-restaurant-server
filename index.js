@@ -30,8 +30,16 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     // Send a ping to confirm a successful connection
+    const menu=client.db('panda-restaurant').collection('menu')
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
+    // get all menu
+    app.get('/getMenus',async(req,res)=>{
+        const result=await menu.find().toArray()
+        res.send(result)
+    })
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
