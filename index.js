@@ -33,6 +33,7 @@ async function run() {
     const menu=client.db('panda-restaurant').collection('menu')
     const review=client.db('panda-restaurant').collection('reviews')
     const user=client.db('panda-restaurant').collection('user')
+    const order=client.db('panda-restaurant').collection('order')
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
@@ -41,10 +42,17 @@ async function run() {
         const result=await menu.find().toArray()
         res.send(result)
     })
-
+    // added user in mongodb
     app.post('/postUser',async(req,res)=>{
       const data=req.body
       const result=await user.insertOne(data)
+      res.send(result)
+    })
+
+    // added user order
+    app.post('/postOrder',async(req,res)=>{
+      const data=req.body
+      const result=await order.insertOne(data)
       res.send(result)
     })
 
