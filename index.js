@@ -31,6 +31,8 @@ async function run() {
     // await client.connect();
     // Send a ping to confirm a successful connection
     const menu=client.db('panda-restaurant').collection('menu')
+    const review=client.db('panda-restaurant').collection('reviews')
+    const user=client.db('panda-restaurant').collection('user')
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
@@ -38,6 +40,12 @@ async function run() {
     app.get('/getMenus',async(req,res)=>{
         const result=await menu.find().toArray()
         res.send(result)
+    })
+
+    app.post('/postUser',async(req,res)=>{
+      const data=req.body
+      const result=await user.insertOne(data)
+      res.send(result)
     })
 
   } finally {
