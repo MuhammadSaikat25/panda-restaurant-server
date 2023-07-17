@@ -59,7 +59,14 @@ async function run() {
       res.send(token)
     })
 
-    
+    //delete user 
+    app.delete('/deleteUser/:id',async(req,res)=>{
+      const id=req.params.id 
+      const query={_id:new ObjectId(id)}
+      const result=await user.deleteOne(query)
+      res.send(result)
+    })
+
     // get all menu
     app.get('/getMenus',async(req,res)=>{
         const result=await menu.find().toArray()
