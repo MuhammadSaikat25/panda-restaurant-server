@@ -70,7 +70,6 @@ async function run() {
       next()
     }
 
-
     //delete user 
     app.delete('/deleteUser/:id',VerifyJwt,verifyAdmin, async (req, res) => {
       const id = req.params.id
@@ -78,7 +77,13 @@ async function run() {
       const result = await user.deleteOne(query)
       res.send(result)
     })
-
+    // delete food from menu by admin
+    app.delete('/deleteFood/:id',VerifyJwt,verifyAdmin,async(req,res)=>{
+      const id=req.params.id 
+      const query={_id:new ObjectId(id)}
+      const result=await menu.deleteOne(query)
+      res.send(result)
+    })
     // delete user order by user 
     app.delete('/deleteOrder/:id',VerifyJwt, async(req,res)=>{
       const id=req.params.id 
@@ -93,8 +98,7 @@ async function run() {
       const result = await menu.find().toArray()
       res.send(result)
     })
-
-    // get single user order
+    // get single user orders
     app.get('/getSingleUserOrder/:email', VerifyJwt, async (req, res) => {
       const email = req.params.email
       const query = { email: email }
@@ -102,8 +106,7 @@ async function run() {
       res.send(result)
     })
 
-
-    // get all user 
+    // get all users 
     app.get('/getAllUser', VerifyJwt, async (req, res) => {
       const result = await user.find().toArray()
       res.send(result)
@@ -122,7 +125,7 @@ async function run() {
       res.send(result)
     })
 
-    // added user order
+    // added users order
     app.post('/postOrder', async (req, res) => {
       const data = req.body
       const result = await order.insertOne(data)
