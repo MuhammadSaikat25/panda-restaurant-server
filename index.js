@@ -21,6 +21,7 @@ const VerifyJwt = (req, res, next) => {
   const token = authorization.split(' ')[1]
 
   jwt.verify(token, process.env.VITE_JWT, (error, decode) => {
+    
     if (error) {
       return res.status(401).send({ error: true, message: 'unauthorized access' })
     }
@@ -46,7 +47,6 @@ async function run() {
     // await client.connect();
     // Send a ping to confirm a successful connection
     const menu = client.db('panda-restaurant').collection('menu')
-    const review = client.db('panda-restaurant').collection('reviews')
     const user = client.db('panda-restaurant').collection('user')
     const order = client.db('panda-restaurant').collection('order')
     await client.db("admin").command({ ping: 1 });
@@ -59,11 +59,32 @@ async function run() {
       res.send(token)
     })
 
+    // verify admin
+    const verifyAdmin=async(req,res,next)=>{
+      const email=req.decode.email
+      const query={email:email}
+      const users=await user.findOne(query)
+      if(users?.role!=='admin'){
+       return  res.status(403).send({error:true,message:'forbidden access'})
+      }
+      next()
+    }
+
+
     //delete user 
-    app.delete('/deleteUser/:id', async (req, res) => {
+    app.delete('/deleteUser/:id',VerifyJwt,verifyAdmin, async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
       const result = await user.deleteOne(query)
+      res.send(result)
+    })
+
+    // delete user order by user 
+    app.delete('/deleteOrder/:id',VerifyJwt, async(req,res)=>{
+      const id=req.params.id 
+      
+      const query={_id:new ObjectId(id)}
+      const result=await order.deleteOne(query)
       res.send(result)
     })
 
@@ -81,24 +102,23 @@ async function run() {
       res.send(result)
     })
 
-    // delete user order 
-    app.delete('/deleteOrder/:id',VerifyJwt, async(req,res)=>{
-      const id=req.params.id 
-      console.log(id)
-      const query={_id:new ObjectId(id)}
-      const result=await order.deleteOne(query)
-      res.send(result)
-    })
 
     // get all user 
     app.get('/getAllUser', VerifyJwt, async (req, res) => {
       const result = await user.find().toArray()
       res.send(result)
     })
+
     // added user in mongodb
     app.post('/postUser', async (req, res) => {
       const data = req.body
       const result = await user.insertOne(data)
+      res.send(result)
+    })
+    // added Food
+    app.post('/addFood',VerifyJwt,verifyAdmin,async(req,res)=>{
+      const data=req.body 
+      const result=await menu.insertOne(data)
       res.send(result)
     })
 
@@ -110,11 +130,8 @@ async function run() {
     })
 
     //make admin
-    app.patch('/makeAdmin/:email', VerifyJwt, async (req, res) => {
+    app.patch('/makeAdmin/:email', VerifyJwt,verifyAdmin,async (req, res) => {
       const email = req.params.email
-      if(req.decode.email!==email){
-        return res.status(401).send({ error: true, message: 'unauthorized access' })
-      }
       const query = { email: email }
       const update = {
         $set: {
@@ -124,7 +141,7 @@ async function run() {
       const result = await user.updateOne(query, update)
       res.send(result)
     })
-
+    
     // pagination 
     app.get('/totalFood',async(req,res)=>{
       const result=await menu.estimatedDocumentCount()
